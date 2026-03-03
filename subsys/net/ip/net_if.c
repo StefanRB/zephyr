@@ -865,9 +865,9 @@ static struct net_if_router *iface_router_add(struct net_if *iface,
 		routers[i].is_used = true;
 		routers[i].iface = iface;
 		routers[i].address.family = family;
+		routers[i].is_default = is_default;
 
 		if (lifetime) {
-			routers[i].is_default = true;
 			routers[i].is_infinite = false;
 			routers[i].lifetime = lifetime;
 			routers[i].life_start = k_uptime_get_32();
@@ -877,7 +877,6 @@ static struct net_if_router *iface_router_add(struct net_if *iface,
 
 			iface_router_update_timer(routers[i].life_start);
 		} else {
-			routers[i].is_default = false;
 			routers[i].is_infinite = true;
 			routers[i].lifetime = 0;
 		}
@@ -897,8 +896,6 @@ static struct net_if_router *iface_router_add(struct net_if *iface,
 		} else if (IS_ENABLED(CONFIG_NET_IPV4) && family == NET_AF_INET) {
 			memcpy(net_if_router_ipv4(&routers[i]), addr,
 			       sizeof(struct net_in_addr));
-			routers[i].is_default = is_default;
-
 			net_mgmt_event_notify_with_info(
 					NET_EVENT_IPV4_ROUTER_ADD, iface,
 					&routers[i].address.in_addr,
@@ -3017,9 +3014,10 @@ void net_if_ipv6_router_update_lifetime(struct net_if_router *router,
 
 struct net_if_router *net_if_ipv6_router_add(struct net_if *iface,
 					     const struct net_in6_addr *addr,
+					     bool is_default,
 					     uint16_t lifetime)
 {
-	return iface_router_add(iface, NET_AF_INET6, addr, false, lifetime);
+	return iface_router_add(iface, NET_AF_INET6, addr, is_default, lifetime);
 }
 
 bool net_if_ipv6_router_rm(struct net_if_router *router)
@@ -4534,7 +4532,7 @@ struct net_if_addr *net_if_ipv4_addr_add(struct net_if *iface,
 	struct net_if_addr *ifaddr = NULL;
 	struct net_if_addr_ipv4 *cur;
 	struct net_if_ipv4 *ipv4;
-	bool do_acd = false;
+	bool do_acd = false, override = false;
 	int idx;
 
 	net_if_lock(iface);
@@ -4567,6 +4565,7 @@ struct net_if_addr *net_if_ipv4_addr_add(struct net_if *iface,
 		    && cur->ipv4.addr_type == NET_ADDR_OVERRIDABLE) {
 			ifaddr = &cur->ipv4;
 			idx = i;
+			override = true;
 			break;
 		}
 
@@ -4578,6 +4577,21 @@ struct net_if_addr *net_if_ipv4_addr_add(struct net_if *iface,
 	}
 
 	if (ifaddr) {
+		/* If we are overriding an existing address, remember to cancel
+		 * acd and send del event. Without these, mDNS announcement will
+		 * send also the old address that is no longer in use.
+		 */
+		if (override) {
+			/* But do not send address removal if the address is the same */
+			if (!net_ipv4_addr_cmp(&ifaddr->address.in_addr, addr)) {
+				net_ipv4_acd_cancel(iface, ifaddr);
+				net_mgmt_event_notify_with_info(NET_EVENT_IPV4_ADDR_DEL,
+								iface,
+								&ifaddr->address.in_addr,
+								sizeof(struct net_in_addr));
+			}
+		}
+
 		ifaddr->is_used = true;
 		ifaddr->is_added = true;
 		ifaddr->address.family = NET_AF_INET;
@@ -5419,9 +5433,7 @@ static void remove_ipv4_ifaddr(struct net_if *iface,
 		goto out;
 	}
 
-#if defined(CONFIG_NET_IPV4_ACD)
 	net_ipv4_acd_cancel(iface, ifaddr);
-#endif
 
 	net_mgmt_event_notify_with_info(NET_EVENT_IPV4_ADDR_DEL,
 					iface,

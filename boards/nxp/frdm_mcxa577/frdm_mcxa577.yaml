@@ -16,4 +16,8 @@ toolchain:
 supported:
   - gpio
   - uart
+  - counter
+  - dma
+  - watchdog
+  - flash
 vendor: nxp

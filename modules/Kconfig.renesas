@@ -1,6 +1,6 @@
 # Renesas FSP HAL config
 
-# Copyright (c) 2024-2025 Renesas Electronics Corporation
+# Copyright (c) 2024-2026 Renesas Electronics Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 config HAS_RENESAS_RA_FSP
@@ -45,6 +45,11 @@ config USE_RA_FSP_I2C_IIC_CONTROLLER
 	help
 	  Enable Renesas RA I2C IIC Controller driver
 
+config USE_RA_FSP_I2C_IIC_TARGET
+	bool
+	help
+	  Enable Renesas RA I2C IIC Target driver
+
 config USE_RA_FSP_SCI_I2C
 	bool
 	help
@@ -74,6 +79,11 @@ config USE_RA_FSP_MRAM
 	bool
 	help
 	  Enable RA FSP MRAM driver
+
+config USE_RA_FSP_SAU_UART
+	bool
+	help
+	  Enable RA FSP SAU UART driver
 
 if USE_RA_FSP_SCE
 
@@ -301,6 +311,16 @@ config USE_RZ_FSP_ADC
 	bool
 	help
 	  Enable RZ FSP ADC driver
+
+config USE_RZ_FSP_ADC_C
+	bool
+	help
+	  Enable RZ FSP ADC-C driver
+
+config USE_RZ_FSP_ADC_E
+	bool
+	help
+	  Enable RZ FSP ADC-E driver
 
 config USE_RZ_FSP_IOPORT
 	bool

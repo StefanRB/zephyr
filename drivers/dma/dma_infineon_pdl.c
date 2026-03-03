@@ -33,6 +33,7 @@ struct ifx_cat1_dma_channel {
 	uint32_t channel_direction: 3;
 	uint32_t complete_callback_en: 1;
 	uint32_t error_callback_dis: 1;
+	uint32_t sw_triggered: 1;
 
 	cy_stc_dma_descriptor_t descr;
 	IRQn_Type irq;
@@ -74,13 +75,8 @@ int ifx_cat1_dma_trig(const struct device *dev, uint32_t channel)
 	const struct ifx_cat1_dma_config *const cfg = dev->config;
 	struct ifx_cat1_dma_data *data = dev->data;
 
-	/* In general, we do SW trigger in the beginning if src comes from memory.
-	 * The reason is if src comes from peripheral, trigger signal from peripheral
-	 * will trigger DMA in the beginning.
-	 */
-	if ((data->channels[channel].channel_direction == MEMORY_TO_MEMORY) ||
-	    (data->channels[channel].channel_direction == MEMORY_TO_PERIPHERAL)) {
-		/* Set SW trigger for the channel */
+	/* Set SW trigger for the channel */
+	if (data->channels[channel].sw_triggered) {
 		Cy_DMA_Channel_SetSWTrigger(cfg->regs, channel);
 	}
 
@@ -147,12 +143,6 @@ static int ifx_cat1_dma_config(const struct device *dev, uint32_t channel,
 		return -EINVAL;
 	}
 
-	/* Support only the same burst_length for source and dest */
-	if (config->dest_burst_length != config->source_burst_length) {
-		LOG_ERR("Source and dest burst_length differ.");
-		return -EINVAL;
-	}
-
 	/* DataWire only supports <=256 byte burst and <=256 bytes per burst */
 	if ((config->dest_burst_length > 256) ||
 	    (config->dest_burst_length <= 1 && config->head_block->block_size > 256) ||
@@ -174,6 +164,8 @@ static int ifx_cat1_dma_config(const struct device *dev, uint32_t channel,
 	data->channels[channel].channel_direction = config->channel_direction;
 	data->channels[channel].complete_callback_en = config->complete_callback_en;
 	data->channels[channel].error_callback_dis = config->error_callback_dis;
+	data->channels[channel].sw_triggered =
+		(config->channel_direction == MEMORY_TO_MEMORY) ? 1 : config->source_handshake;
 
 	/* Get first descriptor */
 	descriptor = &data->channels[channel].descr;
@@ -200,10 +192,11 @@ static int ifx_cat1_dma_config(const struct device *dev, uint32_t channel,
 
 	descriptor_config.triggerOutType = CY_DMA_DESCR_CHAIN;
 
-	if (config->channel_direction == MEMORY_TO_MEMORY) {
-		descriptor_config.triggerInType = CY_DMA_DESCR_CHAIN;
-	} else {
+	if ((config->source_burst_length == 1) &&
+	    (config->channel_direction != MEMORY_TO_MEMORY)) {
 		descriptor_config.triggerInType = CY_DMA_1ELEMENT;
+	} else {
+		descriptor_config.triggerInType = CY_DMA_DESCR_CHAIN;
 	}
 
 	/* Set data size byte / 2 bytes / word */
@@ -234,19 +227,22 @@ static int ifx_cat1_dma_config(const struct device *dev, uint32_t channel,
 		descriptor_config.dstXincrement =
 			convert_dma_xy_increment_z_to_pdl(block_config->dest_addr_adj);
 
+		/* Calculate total number of data elements in this block */
+		uint32_t total_elements = block_config->block_size / config->dest_data_size;
+
 		/* Setup 1D/2D descriptor for each data block */
 		if (config->dest_burst_length != 0) {
 			descriptor_config.descriptorType = CY_DMA_2D_TRANSFER;
 			descriptor_config.xCount = config->dest_burst_length;
 			descriptor_config.yCount =
-				DIV_ROUND_UP(block_config->block_size, config->dest_burst_length);
+				DIV_ROUND_UP(total_elements, config->dest_burst_length);
 			descriptor_config.srcYincrement =
 				descriptor_config.srcXincrement * config->dest_burst_length;
 			descriptor_config.dstYincrement =
 				descriptor_config.dstXincrement * config->dest_burst_length;
 		} else {
 			descriptor_config.descriptorType = CY_DMA_1D_TRANSFER;
-			descriptor_config.xCount = block_config->block_size;
+			descriptor_config.xCount = total_elements;
 			descriptor_config.yCount = 1;
 			descriptor_config.srcYincrement = 0;
 			descriptor_config.dstYincrement = 0;
@@ -256,10 +252,10 @@ static int ifx_cat1_dma_config(const struct device *dev, uint32_t channel,
 		 * Note: In devices with CBUS and SAHB address spaces, the DMA only supports SAHB
 		 * mapped transactions.
 		 */
-		descriptor_config.srcAddress = (void *)CY_REMAP_ADDRESS_CBUS_TO_SAHB(
-			(void *)config->head_block->source_address);
-		descriptor_config.dstAddress = (void *)CY_REMAP_ADDRESS_CBUS_TO_SAHB(
-			(void *)config->head_block->dest_address);
+		descriptor_config.srcAddress =
+			(void *)CY_REMAP_ADDRESS_CBUS_TO_SAHB((void *)block_config->source_address);
+		descriptor_config.dstAddress =
+			(void *)CY_REMAP_ADDRESS_CBUS_TO_SAHB((void *)block_config->dest_address);
 
 		/* Allocate next descriptor if need */
 		if (i + 1u < config->block_count) {

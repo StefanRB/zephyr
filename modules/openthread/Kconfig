@@ -283,6 +283,23 @@ config OPENTHREAD_COPROCESSOR_UART_RING_BUFFER_SIZE
 	help
 	  TX buffer size for the OpenThread Co-Processor UART.
 
+config OPENTHREAD_COPROCESSOR_UART_ASYNC
+	bool "Use async UART API for OpenThread Co-Processor"
+	depends on UART_ASYNC_API
+	help
+	  Enable use of Zephyr's asynchronous UART API for the OpenThread
+	  Co-Processor interface. When disabled, the interrupt-driven UART API
+	  is used instead.
+
+config OPENTHREAD_COPROCESSOR_UART_RX_BUFFER_SIZE
+	int "Set Co-Processor UART RX buffer size"
+	depends on OPENTHREAD_COPROCESSOR_UART_ASYNC
+	range 0 4096
+	default 256
+	help
+	  RX buffer size for the OpenThread Co-Processor UART when using
+	  the asynchronous UART API.
+
 config OPENTHREAD_COPROCESSOR_VENDOR_HOOK_SOURCE
 	string "Path to vendor hook source file"
 	help
@@ -408,8 +425,7 @@ config OPENTHREAD_PLATFORM_USEC_TIMER
 menu "OpenThread Border Router"
 
 config OPENTHREAD_ZEPHYR_BORDER_ROUTER
-	bool "Adds support for Border Router functionality [EXPERIMENTAL]"
-	select EXPERIMENTAL
+	bool "Adds support for Border Router functionality"
 	select NET_ROUTING
 	help
 	  Enable support for Border Router using Openthread's implementation.
@@ -489,6 +505,14 @@ config OPENTHREAD_ZEPHYR_BORDER_ROUTER_MDNS_BUFFER_THRESHOLD
 	  number of available OT message buffers will drop under a certain
 	  threshold if the mDNS packet is accepted and processed.
 
+config OPENTHREAD_ZEPHYR_BORDER_ROUTER_IPV4
+	bool "Border Router has IPV4 capabilities"
+	default y
+	select NET_DHCPV4
+	depends on NET_IPV4 && NET_UDP
+	help
+	  This configuration enables IPV4 communication.
+
 config OPENTHREAD_ZEPHYR_BORDER_ROUTER_NAT64_TRANSLATOR
 	bool "Border Router NAT64 translator"
 	default y
@@ -496,7 +520,7 @@ config OPENTHREAD_ZEPHYR_BORDER_ROUTER_NAT64_TRANSLATOR
 	select OPENTHREAD_NAT64_BORDER_ROUTING
 	select NET_PKT_FILTER
 	select NET_PKT_FILTER_IPV4_HOOK
-	depends on NET_IPV4
+	depends on OPENTHREAD_ZEPHYR_BORDER_ROUTER_IPV4
 	help
 	  This configuration enables NAT64 translator from OpenThread.
 
