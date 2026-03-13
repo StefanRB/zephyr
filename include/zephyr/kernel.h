@@ -6112,9 +6112,7 @@ void k_heap_free(struct k_heap *h, void *mem) __attribute_nonnull(1);
  * Heap sizing constants computed at build time from actual struct layouts
  * in lib/heap/heap_constants.c via the gen_offset mechanism.
  */
-#if __has_include(<zephyr/offsets.h>)
-#include <zephyr/offsets.h>
-#endif
+#include <zephyr/heap_constants.h>
 
 /* chunk0 size in bytes for nb buckets (includes trailer metadata) */
 #define _Z_HEAP_C0(nb) \

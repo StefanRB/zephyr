@@ -12,6 +12,8 @@ toolchain:
 ram: 256
 flash: 256
 supported:
+  - adc
   - gpio
+  - can
   - uart
 vendor: nxp
