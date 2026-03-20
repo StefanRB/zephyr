@@ -54,6 +54,7 @@
 
 / {
 	chosen {
+		zephyr,crc = &crc;
 		zephyr,entropy = &rng;
 		zephyr,flash-controller = &flash;
 		st,lptim-stdby-timer = &rtc;
@@ -128,6 +129,7 @@
 			#clock-cells = <0>;
 			compatible = "st,stm32wba-hse-clock";
 			clock-frequency = <DT_FREQ_M(32)>;
+			hse-trimming = <0x0c>;
 			status = "disabled";
 		};
 
@@ -163,6 +165,7 @@
 	mcos {
 		mco1: mco1 {
 			compatible = "st,stm32-clock-mco";
+			clock-names = "clksel";
 			status = "disabled";
 		};
 	};
@@ -235,7 +238,7 @@
 		};
 
 		pwr: power@46020800 {
-			compatible = "st,stm32-dualreg-pwr", "st,stm32-pwr";
+			compatible = "st,stm32wba-pwr", "st,stm32-pwr";
 			reg = <0x46020800 0x400>;
 			wkup-pins-nb = <8>;
 			wkup-pin-srcs = <2>;
@@ -629,6 +632,14 @@
 			dma-channels = <8>;
 			dma-requests = <52>;
 			dma-offset = <0>;
+			status = "disabled";
+		};
+
+		crc: crc@40023000 {
+			compatible = "st,stm32-crc";
+			reg = <0x40023000 0x400>;
+			clocks = <&rcc STM32_CLOCK(AHB1, 12)>;
+			resets = <&rctl STM32_RESET(AHB1, 12)>;
 			status = "disabled";
 		};
 	};
