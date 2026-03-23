@@ -135,6 +135,9 @@ manifest:
       path: modules/hal/cmsis_6
       groups:
         - hal
+    - name: dhara
+      revision: 6f163ca05e174b168b4d148160b50eeaeeb561fc
+      path: modules/lib/dhara
     - name: edtt
       revision: c282625e694f0b53ea53e13231ea6d2f49411768
       path: tools/edtt
@@ -146,7 +149,7 @@ manifest:
       groups:
         - fs
     - name: hal_adi
-      revision: f24186100783b7633594e7114b4b1d98e55a080d
+      revision: fc36ee1f5118caa62d9c151cf2e47c193d18d926
       path: modules/hal/adi
       groups:
         - hal
@@ -156,7 +159,7 @@ manifest:
       groups:
         - hal
     - name: hal_ambiq
-      revision: 5efc0228528a8adce5eae0d226fac85d2551eb3b
+      revision: 21565be7baa02f03d27a734bf9939c0dcb3cfec9
       path: modules/hal/ambiq
       groups:
         - hal
@@ -167,11 +170,11 @@ manifest:
         - hal
     - name: hal_bouffalolab
       path: modules/hal/bouffalolab
-      revision: 6236ecf4224ffb5fe1e3542c0380db951bb14540
+      revision: c71e1197e7e9e0fd7be801844e09533c030b56a9
       groups:
         - hal
     - name: hal_espressif
-      revision: dff4ebffee46789e6f2153bc1f6f655fd89a7963
+      revision: a9b1991ad956e24468ebc841d3f90398729d46b5
       path: modules/hal/espressif
       west-commands: west/west-commands.yml
       groups:
@@ -187,7 +190,7 @@ manifest:
       groups:
         - hal
     - name: hal_infineon
-      revision: 839de193c8c555a75ce44c3d6085fae9227caa85
+      revision: 3ae25facf70c296145f6e12aa10b4810d49c2b33
       path: modules/hal/infineon
       groups:
         - hal
@@ -202,7 +205,7 @@ manifest:
       groups:
         - hal
     - name: hal_nordic
-      revision: 3e5403c9cc91fdfb11b6712ae9816674791f9f87
+      revision: 70c1b32dd68753b0604beab377392ed5ebc19176
       path: modules/hal/nordic
       groups:
         - hal
@@ -212,7 +215,7 @@ manifest:
       groups:
         - hal
     - name: hal_nxp
-      revision: d12ee715e5f7297806b9c3289e1343899b93750f
+      revision: d5a3b40c05699689c692021d82171dff3e94b38e
       path: modules/hal/nxp
       groups:
         - hal
@@ -228,12 +231,12 @@ manifest:
         - hal
     - name: hal_realtek
       path: modules/hal/realtek
-      revision: 5d482b1086d551f07ae331caae7f2b05029068fe
+      revision: c8f99f7de0b8ea5817dd1873e0b31208be3fb63b
       groups:
         - hal
     - name: hal_renesas
       path: modules/hal/renesas
-      revision: c92be1e7442b01e02d0f56a3b0ee090d8d068467
+      revision: 59414fee28d89de23673d2e6b3789d711942436d
       groups:
         - hal
     - name: hal_rpi_pico
@@ -247,7 +250,7 @@ manifest:
       groups:
         - hal
     - name: hal_silabs
-      revision: aad92b8a992dbb8eecc5560d2a648d70c884ede5
+      revision: b2e1724a44552c54e141b4ee03bcb461c5b18fa4
       path: modules/hal/silabs
       groups:
         - hal
@@ -257,7 +260,7 @@ manifest:
       groups:
         - hal
     - name: hal_stm32
-      revision: 57803da28e985e1cbc32a7ea993578f7267d0935
+      revision: 610e32fb539e3f1b7c6c0959a7566ecfd1b75e44
       path: modules/hal/stm32
       groups:
         - hal
@@ -272,7 +275,7 @@ manifest:
       groups:
         - hal
     - name: hal_ti
-      revision: b141deb61a34e257afa16381c5d25e2f3d56d5a5
+      revision: b0347dba143798dafa3b57babfb754228398e5c5
       path: modules/hal/ti
       groups:
         - hal
@@ -293,7 +296,7 @@ manifest:
         - hal
     - name: hostap
       path: modules/lib/hostap
-      revision: 9a7aef98c8758337b8b83d87ba64dc924769b67a
+      revision: c801f15ce8b9dfd363fcc4e45d500ad8d787b4af
     - name: liblc3
       revision: 48bbd3eacd36e99a57317a0a4867002e0b09e183
       path: modules/lib/liblc3
@@ -365,7 +368,7 @@ manifest:
         - debug
     - name: picolibc
       path: modules/lib/picolibc
-      revision: ca8b6ebba5226a75545e57a140443168a26ba664
+      revision: 01254932e8e81085817ed61fd858648584ffe37c
     - name: psa-arch-tests
       revision: 6e8219237435112df33bbcf37b7f5657fcfb9cff
       path: modules/tee/tf-m/psa-arch-tests
