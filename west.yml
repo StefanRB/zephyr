@@ -25,6 +25,8 @@ manifest:
       url-base: https://github.com/BabbleSim
     - name: StefanRB
       url-base: https://github.com/StefanRB
+    - name: erwango_mcuboot
+      url-base: https://github.com/erwango
 
   group-filter: [-babblesim, -optional, -testing]
 
@@ -329,7 +331,7 @@ manifest:
         - crypto
     - name: mcuboot
       remote: StefanRB
-      revision: 9aa68789025031afcad8e01ab86af0f7be3486c1
+      revision: n6_serial_recov
       path: bootloader/mcuboot
       groups:
         - bootloader
